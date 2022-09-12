@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,8 +22,8 @@ public class ProducerUser {
     private final Logger logger = LoggerFactory.getLogger(ProducerString.class);
 
 
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    @Autowired()
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
 
     @GetMapping
@@ -49,27 +50,40 @@ public class ProducerUser {
 
 
     @GetMapping("/partitions")
-    public ResponseEntity<User> sendUserPatitions() {
-        User user = User.builder()
-                .id(10)
-                .name("Gustavo - " + LocalDateTime.now())
-                .email("inge@gus.com")
-                .build();
-        logger.info("Usuario a enviar: " + user);
+    public ResponseEntity<String> sendUsersPatitions() {
 
-        ObjectMapper mapper = new ObjectMapper();
-        String userJson = null;
-        try {
-            userJson = mapper.writeValueAsString(user);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+
+        for (int i = 0; i < 5; i++) {
+            User user = User.builder()
+                    .id(i)
+                    .name("Gustavo - " + LocalDateTime.now())
+                    .email("inge@gus.com")
+                    .build();
+            logger.info("Usuario a enviar: " + user);
+
+            ObjectMapper mapper = new ObjectMapper();
+            String userJson = null;
+            try {
+                userJson = mapper.writeValueAsString(user);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            // 1 // Numero de particion a enviar
+            this.kafkaTemplate.send("topic-users-partitions", 1, "usuario", userJson);
+            /*
+            // Con el get() se espera a que se envie el mensaje de forma sincrona
+
+            try {
+                this.kafkaTemplate.send("topic-users-partitions", 1, "usuario", userJson).get();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }*/
         }
-        // 2 // Numero de particion a enviar
-        this.kafkaTemplate.send("topic-users-partitions", 1, "usuario", userJson);
 
-        return ResponseEntity.ok(user);
+
+        return ResponseEntity.ok("Mensaje con los usuarios enviados");
     }
-
-
-
 }

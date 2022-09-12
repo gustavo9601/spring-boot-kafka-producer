@@ -19,7 +19,7 @@ public class ProducerString {
     private final Logger logger = LoggerFactory.getLogger(ProducerString.class);
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
 
     @GetMapping
