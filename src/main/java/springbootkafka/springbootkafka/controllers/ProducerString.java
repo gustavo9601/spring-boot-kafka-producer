@@ -25,7 +25,7 @@ public class ProducerString {
     @GetMapping
     public ResponseEntity<String> sendString() {
         logger.info("Enviando mensaje to Kafka");
-        this.kafkaTemplate.send("topic-strings", "Hola desde Spring Boot a las :\t" + LocalDateTime.now());
+        this.kafkaTemplate.send("topic-strings", "llave-string", "Hola desde Spring Boot a las :\t" + LocalDateTime.now());
         return ResponseEntity.ok("Mensaje enviado");
     }
 
