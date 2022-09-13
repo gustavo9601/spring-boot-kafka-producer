@@ -27,25 +27,26 @@ public class ProducerUser {
 
 
     @GetMapping
-    public ResponseEntity<User> sendUser() {
-        User user = User.builder()
-                .id(10)
-                .name("Gustavo - " + LocalDateTime.now())
-                .email("inge@gus.com")
-                .build();
-        logger.info("Usuario a enviar: " + user);
+    public ResponseEntity<String> sendUser() {
 
         ObjectMapper mapper = new ObjectMapper();
-        String userJson = null;
-        try {
-            userJson = mapper.writeValueAsString(user);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        for (int i = 0; i < 100; i++) {
+            User user = User.builder()
+                    .id(i)
+                    .name("User " + i)
+                    .email("user" + i + "@gmail.com")
+                    .build();
+            logger.info("Usuario a enviar: " + user);
+            String userJson = null;
+            try {
+                userJson = mapper.writeValueAsString(user);
+            } catch (JsonProcessingException e) {
+                logger.error("Error al convertir el usuario a JSON: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+            this.kafkaTemplate.send("topic-pruebas-consumer-1-partition", "usuario", userJson);
         }
-
-        this.kafkaTemplate.send("topic-users", "usuario", userJson);
-
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok("Ok");
     }
 
 
